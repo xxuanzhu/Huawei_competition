@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>My</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map_container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+    </style>
+    <script src="//api.map.baidu.com/api?v=1.0&type=webgl&ak=zWIHPDIRV7rZ00IPnUASBMtTLoQXA9zB"></script>
+    <script src="//mapv.baidu.com/build/mapv.min.js"></script>
+    <script src="https://code.bdstatic.com/npm/mapvgl@1.0.0-beta.62/dist/mapvgl.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+<body>
+<div id="map_container"></div>
+<script async="async">
+    /* global BMapGL */
+
+    /* global mapv */
+
+    /* global mapvgl */
+
+    /* global initMap */
+
+    /* global purpleStyle */
+    var map = new BMapGL.Map('map_container');
+    //var point = new BMapGL.Point(116.403748, 39.915055);
+    //map.centerAndZoom(point, 1);
+    map.enableScrollWheelZoom(true);
+
+    var view = new mapvgl.View({
+        map: map
+    });
+
+    view.startAnimation();
+    // var fso = new ActiveXObject("Scripting.FileSystemObkect");
+    // var f1 = fso.GetFolder('../static/data/');
+    // var len = f1.length();
+
+    fetch('../static/data/BC625462967772_gps_data.csv').then(function (rs) {
+        return rs.text();
+    }).then(function (rrs) {
+        allTextLines = rrs.split(/\r\n|\n/);
+        var coordinates = [];
+        var data = [];
+        for (var i = 1; i < allTextLines.length; i++) {
+            var line = allTextLines[i].split(',');
+            var longtitude = line[1];
+            var latitude = line[2];
+            if (i == 1){
+                var truePonit = new BMapGL.Point(longtitude, latitude);
+                map.centerAndZoom(truePonit, 1);
+            }
+            coordinates.push([longtitude, latitude]);
+        }
+        data.push({
+            geometry: {
+                type: 'LineString',
+                coordinates: coordinates
+            }
+        });
+        var layer = new mapvgl.LineTripLayer({
+            color: 'rgb(255,16,21)',
+            step: 2,
+            trailLength: allTextLines.length,
+            startTime: 0,
+            endTime: 2 * allTextLines.length,
+        });
+        view.addLayer(layer);
+        layer.setData(data);
+
+
+    });
+
+
+</script>
+</body>
+</html>
